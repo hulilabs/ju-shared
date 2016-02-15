@@ -19,7 +19,6 @@
  * @extends ju-shared/base-proxy
  */
 
-
 define([
             'jquery',
             'ju-shared/base-proxy',
@@ -29,8 +28,7 @@ define([
                     $,
                     BaseProxy,
                     AuthProvider
-                )
-{
+                ) {
     'use strict';
 
     var AuthProxy = BaseProxy.extend({
@@ -43,12 +41,12 @@ define([
          * @param {String} opts.EP.LOGOUT - the logout URL endpoint
          * @param {String} opts.EP.REFRESH_TOKEN - the refreshToken URL endpoint
          */
-        init : function (opts) {
+        init : function(opts) {
             opts = opts || {};
             opts.skipAjaxErrorsHandling = true;
             this._super.call(this, opts);
+            this.authProvider = AuthProvider.getInst();
         },
-
 
         /**
          * Login request
@@ -58,8 +56,8 @@ define([
          * @param {Function} successCallback
          * @param {Function} errorCallback
          */
-        login : function (params, successCallback, errorCallback) {
-            var requestUrl = this.EP && this.EP.LOGIN ?  this.EP.LOGIN : AuthProxy.opts.EP.LOGIN;
+        login : function(params, successCallback, errorCallback) {
+            var requestUrl = this.EP && this.EP.LOGIN ? this.EP.LOGIN : AuthProxy.opts.EP.LOGIN;
             var ajaxParams = {
                 headers : {
                     APP_KEY : this.opts.appKey || AuthProvider.opts.appKey
@@ -68,11 +66,11 @@ define([
                 data : params,
                 url : requestUrl,
                 useJWTAuthentication : false,
-                type: 'POST',
-                success : function (result, textStatus, request) {
+                type : 'POST',
+                success : function(result, textStatus, request) {
                     this._loginSuccess(result, textStatus, request, successCallback);
                 },
-                error : function (request, textStatus, error) {
+                error : function(request, textStatus, error) {
                     this._loginError(request, textStatus, error, errorCallback);
                 }
             };
@@ -88,11 +86,10 @@ define([
          * @private
          * @see http://api.jquery.com/jquery.ajax/#jQuery-ajax-settings
          */
-        _loginSuccess : function (result, textStatus, request, callback) {
-            var authProvider = AuthProvider.getInst();
+        _loginSuccess : function(result, textStatus, request, callback) {
             var token = result.data && result.data.jwt ? result.data.jwt : null;
             /** Update the localStorage with the returned token **/
-            authProvider.updateToken(token);
+            this.authProvider.updateToken(token);
             callback(result, textStatus, request);
         },
 
@@ -104,9 +101,8 @@ define([
          * @param {Function} callback
          * @private
          */
-        _loginError : function (request, textStatus, error, callback) {
-            var authProvider = AuthProvider.getInst();
-            authProvider.updateToken(null);
+        _loginError : function(request, textStatus, error, callback) {
+            this.authProvider.updateToken(null);
             callback(request, textStatus, error);
         },
 
@@ -116,15 +112,15 @@ define([
          * @param {Function} errorCallback
          * @see https://github.com/hulilabs/portunus#get-authlogout
          */
-        logout : function (successCallback, errorCallback) {
-            var requestUrl = this.EP && this.EP.LOGOUT ?  this.EP.LOGOUT : AuthProxy.opts.EP.LOGOUT;
+        logout : function(successCallback, errorCallback) {
+            var requestUrl = this.EP && this.EP.LOGOUT ? this.EP.LOGOUT : AuthProxy.opts.EP.LOGOUT;
             var ajaxParams = {
                 url : requestUrl,
-                type: 'GET',
-                success : function (result, textStatus, request) {
+                type : 'GET',
+                success : function(result, textStatus, request) {
                     this._logoutSuccess(result, textStatus, request, successCallback);
                 },
-                error : function (request, textStatus, error) {
+                error : function(request, textStatus, error) {
                     this._logoutError(request, textStatus, error, errorCallback);
                 }
             };
@@ -140,9 +136,8 @@ define([
          * @private
          * @see http://api.jquery.com/jquery.ajax/#jQuery-ajax-settings
          */
-        _logoutSuccess : function (result, textStatus, request, callback) {
-            var authProvider = AuthProvider.getInst();
-            authProvider.updateToken(null);
+        _logoutSuccess : function(result, textStatus, request, callback) {
+            this.authProvider.updateToken(null);
             callback(result, textStatus, request);
         },
 
@@ -154,7 +149,7 @@ define([
          * @param {Function} callback
          * @private
          */
-        _logoutError : function (request, textStatus, error, callback) {
+        _logoutError : function(request, textStatus, error, callback) {
             /***
              * @TODO define what to do when the logout fails
              */
@@ -162,22 +157,21 @@ define([
             callback(request, textStatus, error);
         },
 
-
         /**
          * Refresh token request
          * @param {Function} successCallback
          * @param {Function} errorCallback
          * @see https://github.com/hulilabs/portunus#get-authrefresh
          */
-        refreshToken : function (successCallback, errorCallback) {
-            var requestUrl = this.EP && this.EP.REFRESH_TOKEN ?  this.EP.REFRESH_TOKEN : AuthProxy.opts.EP.REFRESH_TOKEN;
+        refreshToken : function(successCallback, errorCallback) {
+            var requestUrl = this.EP && this.EP.REFRESH_TOKEN ? this.EP.REFRESH_TOKEN : AuthProxy.opts.EP.REFRESH_TOKEN;
             var ajaxParams = {
                 url : requestUrl,
-                type: 'GET',
-                success : function (result, textStatus, request) {
+                type : 'GET',
+                success : function(result, textStatus, request) {
                     this._refreshTokenSuccess(result, textStatus, request, successCallback);
                 },
-                error : function (request, textStatus, error) {
+                error : function(request, textStatus, error) {
                     this._refreshTokenError(request, textStatus, error, errorCallback);
                 }
             };
@@ -193,11 +187,10 @@ define([
          * @private
          * @see http://api.jquery.com/jquery.ajax/#jQuery-ajax-settings
          */
-        _refreshTokenSuccess : function (result, textStatus, request, callback) {
-            var authProvider = AuthProvider.getInst();
+        _refreshTokenSuccess : function(result, textStatus, request, callback) {
             var token = result.data ? result.data.jwt : null;
             /** Update the localStorage with the returned token **/
-            authProvider.updateToken(token);
+            this.authProvider.updateToken(token);
             callback(result, textStatus, request);
         },
 
@@ -209,7 +202,7 @@ define([
          * @param {Function} callback
          * @private
          */
-        _refreshTokenError : function (request, textStatus, error, callback) {
+        _refreshTokenError : function(request, textStatus, error, callback) {
             /**
              * @TODO define what to do when the refreshToken fails
              */
