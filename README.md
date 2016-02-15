@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/jpgarbanzo/ju-shared.svg?branch=master)](https://travis-ci.org/jpgarbanzo/ju-shared)
+
 # ju-shared
 Using an Object-Oriented Javascript approach in most cases, the following classes and modules are provided:
 
