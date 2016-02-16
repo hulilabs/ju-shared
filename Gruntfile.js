@@ -1,7 +1,7 @@
 /* global module */
 module.exports = function(grunt) {
     grunt.initConfig({
-        jsRootDir : '../public/js',
+        jsRootDir : 'src',
         jscs : {
             src : grunt.option('files') || [
                 '<%= jsRootDir %>/**/*.js',
