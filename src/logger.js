@@ -205,12 +205,12 @@ window.log = function() {
 
     // Export to popular environments boilerplate.
     if (typeof define === 'function' && define.amd) {
-        window['Logger'] = Logger;
+        window['Logger'] = Logger; //jscs: ignore
         define(Logger);
     } else if (typeof module !== 'undefined' && module.exports) {
         module.exports = Logger;
     } else {
-        window['Logger'] = Logger;
+        window['Logger'] = Logger; //jscs: ignore
     }
 }(window));
 
