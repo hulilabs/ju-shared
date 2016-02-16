@@ -132,7 +132,7 @@ define([], function() {
             /**
              * Gets a single-on instance of this class
              */
-            getInst: function(params) {
+            getInst : function(params) {
                 var inst = this._inst;
                 if (!inst) {
                     inst = new this(params);

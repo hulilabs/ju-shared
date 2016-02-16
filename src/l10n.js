@@ -38,7 +38,7 @@ define([
          * @param  {string} keyName translation key
          * @return {string}         translated text
          */
-        t: function(keyName, defaultText) {
+        t : function(keyName, defaultText) {
             return this.get(keyName) || defaultText;
         },
         /**

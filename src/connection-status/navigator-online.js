@@ -11,8 +11,7 @@
 
 define([],
         function(
-                )
-{
+                ) {
     'use strict';
 
     /**
