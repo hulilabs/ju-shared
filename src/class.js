@@ -59,8 +59,9 @@ define([], function() {
         // The dummy class constructor
         function Class() {
             // All construction is actually done in the init method
-            if (!initializing && this.init)
+            if (!initializing && this.init) {
                 this.init.apply(this, arguments);
+            }
             this._class = Class;
         }
 
@@ -92,7 +93,7 @@ define([], function() {
              */
             for (var name in classPrototype) {
 
-                if (ignoreProps.indexOf(name) >= 0) continue;
+                if (ignoreProps.indexOf(name) >= 0) continue; // jscs: ignore
 
                 var privateFnTest = /^_.*$/,
                     implementFunction = privateFnTest.test(name) ||
@@ -120,10 +121,12 @@ define([], function() {
             delete obj.extended;
             delete obj.setup;
 
-            for (var i in obj)
+            for (var i in obj) {
                 this[i] = obj[i];
-            if (extended)
+            }
+            if (extended) {
                 extended.apply(this);
+            }
             delete extended;
         };
 
@@ -132,7 +135,7 @@ define([], function() {
             /**
              * Gets a single-on instance of this class
              */
-            getInst: function(params) {
+            getInst : function(params) {
                 var inst = this._inst;
                 if (!inst) {
                     inst = new this(params);

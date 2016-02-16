@@ -27,7 +27,7 @@ define([
      * Extend this class to inhering the custom event/messaging for this object
      */
     var ObservableClass = Class.extend({
-        addListener: function(type, listener) {
+        addListener : function(type, listener) {
             var self = this;
             // Makes sure the listener object is defined
             if (!self._listeners) {
@@ -65,7 +65,7 @@ define([
             this.addListener.apply(this, arguments);
         },
 
-        fireEvent: function(name) {
+        fireEvent : function(name) {
 
             var status = true;
 
@@ -99,7 +99,7 @@ define([
          * @param  {[type]} listener [description]
          * @return {[type]}          [description]
          */
-        removeListener: function(type, listener) {
+        removeListener : function(type, listener) {
             // Makes sure the listener object is defined
             if (!this._listeners) {
                 (this._listeners = {});

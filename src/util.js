@@ -13,35 +13,35 @@
  *  Utils
  */
 
+/* jscs: disable requireCurlyBraces */
 /* jshint ignore:start */
 define([],
-        function()
-{
+        function() {
     'use strict';
 
     var ArrayProto = Array.prototype, ObjProto = Object.prototype, FuncProto = Function.prototype;
 
     // Create quick reference variables for speed access to core prototypes.
-    var push         = ArrayProto.push,
-    slice            = ArrayProto.slice,
-    concat           = ArrayProto.concat,
-    toString         = ObjProto.toString,
-    hasOwnProperty   = ObjProto.hasOwnProperty;
+    var push = ArrayProto.push,
+    slice = ArrayProto.slice,
+    concat = ArrayProto.concat,
+    toString = ObjProto.toString,
+    hasOwnProperty = ObjProto.hasOwnProperty;
 
     var
-    nativeForEach      = ArrayProto.forEach,
-    nativeMap          = ArrayProto.map,
-    nativeReduce       = ArrayProto.reduce,
-    nativeReduceRight  = ArrayProto.reduceRight,
-    nativeFilter       = ArrayProto.filter,
-    nativeEvery        = ArrayProto.every,
-    nativeSome         = ArrayProto.some,
-    nativeIndexOf      = ArrayProto.indexOf,
-    nativeLastIndexOf  = ArrayProto.lastIndexOf,
-    nativeIsArray      = Array.isArray,
-    nativeKeys         = Object.keys,
-    nativeCreate       = Object.create,
-    nativeBind         = FuncProto.bind;
+    nativeForEach = ArrayProto.forEach,
+    nativeMap = ArrayProto.map,
+    nativeReduce = ArrayProto.reduce,
+    nativeReduceRight = ArrayProto.reduceRight,
+    nativeFilter = ArrayProto.filter,
+    nativeEvery = ArrayProto.every,
+    nativeSome = ArrayProto.some,
+    nativeIndexOf = ArrayProto.indexOf,
+    nativeLastIndexOf = ArrayProto.lastIndexOf,
+    nativeIsArray = Array.isArray,
+    nativeKeys = Object.keys,
+    nativeCreate = Object.create,
+    nativeBind = FuncProto.bind;
 
     // Naked function reference for surrogate-prototype-swapping.
     var Ctor = function() {};
@@ -165,7 +165,7 @@ define([],
 
     // Keys in IE < 9 that won't be iterated by `for key in ...` and thus missed.
     var hasEnumBug = !{
-        toString: null
+        toString : null
     }.propertyIsEnumerable('toString');
     var nonEnumerableProps = ['valueOf', 'isPrototypeOf', 'toString',
         'propertyIsEnumerable', 'hasOwnProperty', 'toLocaleString'
@@ -445,7 +445,7 @@ define([],
      */
     Util.getUrlParamsFromString = function(query) {
         var match,
-            pl     = /\+/g,  // Regex for replacing addition symbol with a space
+            pl = /\+/g,  // Regex for replacing addition symbol with a space
             search = /([^&=]+)=?([^&]*)/g,
             decode = function(s) { return decodeURIComponent(s.replace(pl, ' ')); },
             queryPos;

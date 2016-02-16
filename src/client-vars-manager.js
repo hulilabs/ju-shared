@@ -30,8 +30,7 @@ define([
      */
     var ClientVarsManager = Class.extend({
 
-        init : function()
-        {   // Initialize variables dictionary
+        init : function() {   // Initialize variables dictionary
             this.varsDictionary = {};
             // Tracks the names of the groups that
             // have been added to the vars collection

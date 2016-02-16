@@ -139,7 +139,7 @@ define([
     /**
      * Base Proxy class
      */
-    var BaseProxy = Class.extend({
+    var BaseProxy = Class.extend({ //jshint ignore:line
 
         init : function(opts) {
 
