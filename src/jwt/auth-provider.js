@@ -11,28 +11,32 @@
 
 /**
  * @file Manage the authentication token
- * @description Manage the authentication token(CRUD operations), sign requests and triggers an event when the token is updated
+ * @description Manages the authentication token(CRUD operations), signs requests
+ * Handles the Login and logout requests and the refresh token flow.
  * @requires jquery
  * @requires ju-shared/observable-class
  * @requires ju-shared/jwt/token
- * @requires ju-shared/web-storage
+ * @requires ju-shared/jwt/refresh-token
+ * @requires ju-shared/jwt/proxy
  * @module ju-shared/jwt/auth-provider
  * @extends ju-shared/observable-class
- * @fires module:ju-shared/jwt/auth-provider#TOKEN_UPDATED
- * @listens ju-shared/web-storage#storageEvent
+ * @listens  module:ju-shared/jwt/token#TOKEN_UPDATED
+ * @listens  module:ju-shared/jwt/refresh-token#REFRESH_TOKEN
  */
 
 define([
         'jquery',
         'ju-shared/observable-class',
         'ju-shared/jwt/token',
-        'ju-shared/web-storage'
+        'ju-shared/jwt/refresh-token',
+        'ju-shared/jwt/proxy'
     ],
     function(
         $,
         ObservableClass,
         JWTToken,
-        WebStorage
+        RefreshToken,
+        AuthProxy
     ) {
         'use strict';
 
@@ -43,36 +47,53 @@ define([
              * @alias module:ju-shared/jwt/auth-provider
              * @param {Object} opts - configuration
              * @param {String} opts.appKey - App key used to validate and request tokens
+             * @param {String} [opts.storageKey] - localStorage key name
+             * @param {Object} [opts.proxy] - AuthProxy configuration, check: @see module:ju-shared/jwt/proxy
              */
             init : function(opts) {
-                opts = opts || {};
-                this.webStorage = new WebStorage().listenStorageEvents();
-                this.appKey = opts.appKey || AuthProvider.opts.appKey;
+                this.opts = opts || {};
+
+                this.appKey = this.opts.appKey || AuthProvider.opts.appKey;
+
                 // JWT options needed to create and validate a token
                 this.jwtOptions = {
                     audience : this.appKey
                 };
-                this.accessToken = this.loadToken();
-                this.webStorage.on(WebStorage.EV.STORAGE_EVENT, $.proxy(this.refreshTokenHandler,this));
+                this.storageKey = this.opts.storageKey || AuthProvider.opts.storageKey;
+
+                this.accessToken = new JWTToken(null, this.storageKey, this.jwtOptions);
+                this.accessToken.load();
+
+                // any time the token changed, let it know to the refreshToken to restart the timer
+                this.accessToken.on(JWTToken.EV.TOKEN_UPDATED + this.storageKey, $.proxy(this._restartRefreshToken,this));
+
+                this._configureProxy();
+
+                this._initRefreshTokenTimer();
             },
 
             /**
-             * Load the token value from the source(1.local storage | 2. cookie)
-             * @returns {*|token} JWTToken
+             * Initializes the refresh token timer
+             * @private
              */
-            loadToken : function() {
-                return new JWTToken(this.webStorage.getItem(AuthProvider.WEB_STORAGE_KEY_ACCESS_TOKEN), this.jwtOptions);
+            _initRefreshTokenTimer : function() {
+                this.refreshTokenTimer = RefreshToken.getInst(this.accessToken);
+                this.refreshTokenTimer.on(RefreshToken.EV.REFRESH_TOKEN, $.proxy(this._requestNewToken, this));
+                if (this.accessToken) {
+                    log('0. RefreshToken: timeout started');
+                    this.refreshTokenTimer.start();
+                }
             },
 
             /**
-             * Sets and stores the token on local storage
-             * @param token {String} - JWT token
+             * configures the proxy.
+             * @private
              */
-            updateToken : function(token) {
-                this.accessToken = new JWTToken(token, this.jwtOptions);
-                var jwtToken = this.accessToken ? this.accessToken.getToken() : null;
-                this.webStorage.setItem(AuthProvider.WEB_STORAGE_KEY_ACCESS_TOKEN, jwtToken);
-                this.trigger(AuthProvider.EV.TOKEN_UPDATED);
+            _configureProxy : function() {
+                // configuring the proxy
+                var proxyConfig = this.opts.proxy || AuthProvider.opts.proxy || {};
+                proxyConfig.appKey = this.appKey;
+                AuthProxy.configure(proxyConfig);
             },
 
             /**
@@ -92,34 +113,77 @@ define([
             },
 
             /**
-             * Get the expiration time
-             * @returns {Number} returns -1 if there is not token
-             */
-            getExpirationTime : function() {
-                return this.accessToken ? this.accessToken.getExpirationTime() : -1;
-            },
-
-            /**
-             * Checks if the current token is valid
+             * Checks if the current user is authenticated
              * @returns {Boolean}
              */
-            isTokenValid : function() {
+            isAuthenticated : function() {
                 return this.accessToken && this.accessToken.isValid();
             },
 
             /**
-             * Handle the event when the token is updated in other tab or window
-             * @param {StorageEvent} event
-             * @see https://developer.mozilla.org/en-US/docs/Web/Events/storage
+             * Authenticates the user
+             * @param {Object} credentials
+             * @param {String} credentials.email - email address
+             * @param {String} credentials.password - user password
+             * @param {Function} callback - returns an error and textStatus parameters if the authentication fails
              */
-            refreshTokenHandler : function(event) {
-                if (event && event.key === AuthProvider.WEB_STORAGE_KEY_ACCESS_TOKEN) {
-                    log('AuthProvider: Token Updated in localStorage, reloading token in memory');
-                    this.accessToken = this.loadToken();
-                    this.trigger(AuthProvider.EV.TOKEN_UPDATED);
-                }
+            login : function(credentials, callback) {
+                var self = this;
+                AuthProxy.getInst().login(credentials,
+                    function onSuccess(token) {
+                        self.accessToken.update(token);
+                        self.accessToken.write();
+                        self.refreshTokenTimer.restart(self.accessToken);
+                        callback();
+                    },
+                    function onError(error, textStatus) {
+                        callback(error, textStatus);
+                    }
+                );
             },
 
+            /**
+             *  Logs out the user.
+             * @param {Function} callback - returns an error and textStatus parameters if the logout fails
+             */
+            logout : function(callback) {
+                AuthProxy.getInst().logout(
+                    function onSuccess() {
+                        callback();
+                    },
+                    function onError(error, textStatus) {
+                        callback(error, textStatus);
+                    }
+                );
+            },
+
+            /**
+             * Request a new token to the Auth server.
+             * @private
+             */
+            _requestNewToken : function() {
+                var self = this;
+                log('3. RefreshToken: requesting a new token');
+                AuthProxy.getInst().refreshToken(
+                    function onSuccess(token) {
+                        self.accessToken.update(token);
+                        self.accessToken.write();
+                        log('4. RefreshToken: token updated');
+                        self.refreshTokenTimer.restart(self.accessToken);
+                    },
+                    function onError() {
+                        Logger.error("AuthProvider: couldn't refresh the token");
+                    }
+                );
+            },
+
+            /**
+             * Restarts the refresh token timer
+             * @private
+             */
+            _restartRefreshToken : function() {
+                this.refreshTokenTimer.restart();
+            },
         });
 
         AuthProvider.classMembers({
@@ -128,25 +192,8 @@ define([
              */
             HEADER_AUTHORIZATION : 'authorization',
 
-            /**
-             * @constant {String} WEB_STORAGE_KEY_ACCESS_TOKEN - Web storage key for the access token, it will store the token
-             */
-            WEB_STORAGE_KEY_ACCESS_TOKEN : 'access_token',
-
-            /**
-             * @constant {String} ERROR_INVALID_TOKEN - Invalid token message
-             */
-            ERROR_INVALID_TOKEN : 'Token invalid',
-
-            EV : {
-                /**
-                 * Event triggered when the token is updated
-                 * @event module:ju-shared/jwt/auth-provider#TOKEN_UPDATED
-                 */
-                TOKEN_UPDATED : 'access_token_updated'
-            },
-
             opts : {
+                storageKey : 'access_token'
             },
 
             configure : function(opts) {

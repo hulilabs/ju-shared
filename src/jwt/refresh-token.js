@@ -14,24 +14,21 @@
  * @description In charge of refreshing the access tokens when is needed it.
  * @requires jquery
  * @requires ju-shared/observable-class
- * @requires ju-shared/jwt/auth-provider
- * @requires ju-shared/jwt/proxy
+ * @requires ju-shared/jwt/token
  * @module ju-shared/jwt/refresh-token
  * @extends ju-shared/observable-class
- * @listens module:ju-shared/jwt/auth-provider#TOKEN_UPDATED
+ * @fires module:ju-shared/jwt/refresh-token#REFRESH_TOKEN
  */
 
 define([
         'jquery',
         'ju-shared/observable-class',
-        'ju-shared/jwt/auth-provider',
-        'ju-shared/jwt/proxy'
+        'ju-shared/jwt/token'
     ],
     function(
         $,
         ObservableClass,
-        AuthProvider,
-        AuthProxy
+        JWTToken
     ) {
         'use strict';
 
@@ -43,34 +40,31 @@ define([
         var RefreshToken = ObservableClass.extend({
 
             timeoutId : null,
-            isEventBound : false,
 
             /**
              * @constructor
              * @alias module:ju-shared/jwt/refresh-token
              */
-            init : function() {
-                this.proxy = AuthProxy.getInst();
-                this.authProvider = AuthProvider.getInst();
+            init : function(token) {
+                this.setToken(token);
             },
 
             /**
              * Starts the process that verifies if needs to update the token
              */
             start : function() {
-                this._startListening();
-                if (this.authProvider.isTokenValid()) {
-                    var expTime = this.authProvider.getExpirationTime();
-                    log('RefreshToken: ExpTime ' + (new Date(expTime * 1000)).toLocaleTimeString());
+                if (this.token.isValid()) {
+                    var expTime = this.token.getExpirationTime();
+                    log('1. RefreshToken: ExpTime ' + (new Date(expTime * 1000)).toLocaleTimeString());
 
                     var remainingTime = expTime - Math.floor(Date.now() / 1000);
-                    log('RefreshToken: RemainingTime ' + remainingTime);
+                    log('2. RefreshToken: RemainingTime ' + remainingTime);
 
                     if (remainingTime <= NEEDED_TIME_TO_REFRESH) {
-                        this._requestNewToken();
+                        this.trigger(RefreshToken.EV.REFRESH_TOKEN);
                     }else {
                         var nextValidation = remainingTime - NEEDED_TIME_TO_REFRESH;
-                        log('RefreshToken: NextValidation ' + nextValidation);
+                        log('3. RefreshToken: NextValidation ' + nextValidation);
                         this.timeoutId = window.setTimeout($.proxy(this.start,this), nextValidation * 1000);
                     }
                 }else {
@@ -82,44 +76,40 @@ define([
              * Stops the timeout execution
              */
             stop : function() {
-                window.clearTimeout(this.timeoutId);
-                this.timeoutId = undefined;
+                if (this.timeoutId) {
+                    window.clearTimeout(this.timeoutId);
+                    this.timeoutId = undefined;
+                }
             },
 
             /**
              * Stops the current timeout and starts a new one
              */
-            restart : function() {
-                log('RefreshToken: timeout stopped and restarted');
+            restart : function(token) {
+                if (token) {
+                    this.setToken(token);
+                }
+                log('0. RefreshToken: timeout stopped and restarted');
                 this.stop();
                 this.start();
             },
 
             /**
-             * starts listening for changes in the token via the authProvider
-             * @private
+             * Sets the token property
+             * @param {JWTToken} token - new token
              */
-            _startListening : function() {
-                if (!this.isEventBound) {
-                    this.authProvider.on(AuthProvider.EV.TOKEN_UPDATED, $.proxy(this.restart,this));
-                    this.isEventBound = true;
-                }
-            },
+            setToken : function(token) {
+                this.token = token;
+            }
+        });
 
-            /**
-             * Request a new token to the Auth server.
-             * @private
-             */
-            _requestNewToken : function() {
-                log('RefreshToken: requesting a new token');
-                this.proxy.refreshToken(
-                    function onSuccess() {
-                        log('RefreshToken: token updated');
-                    },
-                    function onError() {
-                        Logger.error("RefreshToken: couldn't refresh the token");
-                    }
-                );
+        RefreshToken.classMembers({
+            EV : {
+                /**
+                 * Event triggered when the value of token should be refreshed because is going to expire
+                 * @event module:ju-shared/jwt/refresh-token#REFRESH_TOKEN
+                 */
+                REFRESH_TOKEN : 'refreshToken'
             }
         });
 

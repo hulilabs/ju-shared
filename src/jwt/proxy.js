@@ -14,20 +14,17 @@
  * @description Handles the login, logout and refreshToken requests
  * @requires jquery
  * @requires ju-shared/base-proxy
- * @requires ju-shared/jwt/auth-provider
  * @module ju-shared/jwt/proxy
  * @extends ju-shared/base-proxy
  */
 
 define([
             'jquery',
-            'ju-shared/base-proxy',
-            'ju-shared/jwt/auth-provider'
+            'ju-shared/base-proxy'
         ],
         function(
                     $,
-                    BaseProxy,
-                    AuthProvider
+                    BaseProxy
                 ) {
     'use strict';
 
@@ -36,7 +33,7 @@ define([
         /**
          * @constructor
          * @alias module:ju-shared/jwt/proxy
-         * @param {String} opts.APP_KEY - The consumer ID key
+         * @param {String} opts.appKey - The consumer ID key
          * @param {String} opts.EP.LOGIN - the login URL endpoint
          * @param {String} opts.EP.LOGOUT - the logout URL endpoint
          * @param {String} opts.EP.REFRESH_TOKEN - the refreshToken URL endpoint
@@ -45,7 +42,6 @@ define([
             opts = opts || {};
             opts.skipAjaxErrorsHandling = true;
             this._super.call(this, opts);
-            this.authProvider = AuthProvider.getInst();
         },
 
         /**
@@ -60,7 +56,7 @@ define([
             var requestUrl = this.EP && this.EP.LOGIN ? this.EP.LOGIN : AuthProxy.opts.EP.LOGIN;
             var ajaxParams = {
                 headers : {
-                    APP_KEY : this.opts.appKey || AuthProvider.opts.appKey
+                    APP_KEY : this.opts.appKey || AuthProxy.opts.appKey
                 },
                 contentType : 'application/x-www-form-urlencoded',
                 data : params,
@@ -68,42 +64,17 @@ define([
                 useJWTAuthentication : false,
                 type : 'POST',
                 success : function(result, textStatus, request) {
-                    this._loginSuccess(result, textStatus, request, successCallback);
+                    if (result.data && result.data.jwt) {
+                        successCallback(result.data.jwt);
+                    }else {
+                        errorCallback();
+                    }
                 },
                 error : function(request, textStatus, error) {
-                    this._loginError(request, textStatus, error, errorCallback);
+                    errorCallback(error, textStatus);
                 }
             };
             this.makeAjaxRequest(ajaxParams);
-        },
-
-        /**
-         * Is executed when the login is successful, it saves the provided token.
-         * @param {Anything} result
-         * @param {String} textStatus
-         * @param {jqXHR} request
-         * @param {Function} callback
-         * @private
-         * @see http://api.jquery.com/jquery.ajax/#jQuery-ajax-settings
-         */
-        _loginSuccess : function(result, textStatus, request, callback) {
-            var token = result.data && result.data.jwt ? result.data.jwt : null;
-            /** Update the localStorage with the returned token **/
-            this.authProvider.updateToken(token);
-            callback(result, textStatus, request);
-        },
-
-        /**
-         * Is executed when the login fails, set the token as null
-         * @param {jqXHR} request
-         * @param {String} textStatus
-         * @param {String} error
-         * @param {Function} callback
-         * @private
-         */
-        _loginError : function(request, textStatus, error, callback) {
-            this.authProvider.updateToken(null);
-            callback(request, textStatus, error);
         },
 
         /**
@@ -118,43 +89,17 @@ define([
                 url : requestUrl,
                 type : 'GET',
                 success : function(result, textStatus, request) {
-                    this._logoutSuccess(result, textStatus, request, successCallback);
+                    successCallback();
                 },
                 error : function(request, textStatus, error) {
-                    this._logoutError(request, textStatus, error, errorCallback);
+                    /***
+                     * @TODO define what to do when the logout fails
+                     */
+                    Logger.error(error, request);
+                    errorCallback(request, textStatus, error);
                 }
             };
             this.makeAjaxRequest(ajaxParams);
-        },
-
-        /**
-         * Is executed when the logout is successful, sets the token null.
-         * @param {Anything} result
-         * @param {String} textStatus
-         * @param {jqXHR} request
-         * @param {Function} callback
-         * @private
-         * @see http://api.jquery.com/jquery.ajax/#jQuery-ajax-settings
-         */
-        _logoutSuccess : function(result, textStatus, request, callback) {
-            this.authProvider.updateToken(null);
-            callback(result, textStatus, request);
-        },
-
-        /**
-         * Is executed when the logout fails
-         * @param {jqXHR} request
-         * @param {String} textStatus
-         * @param {String} error
-         * @param {Function} callback
-         * @private
-         */
-        _logoutError : function(request, textStatus, error, callback) {
-            /***
-             * @TODO define what to do when the logout fails
-             */
-            Logger.error(error, request);
-            callback(request, textStatus, error);
         },
 
         /**
@@ -169,45 +114,21 @@ define([
                 url : requestUrl,
                 type : 'GET',
                 success : function(result, textStatus, request) {
-                    this._refreshTokenSuccess(result, textStatus, request, successCallback);
+                    if (result.data && result.data.jwt) {
+                        successCallback(result.data.jwt);
+                    }else {
+                        errorCallback();
+                    }
                 },
                 error : function(request, textStatus, error) {
-                    this._refreshTokenError(request, textStatus, error, errorCallback);
+                    /**
+                     * @TODO define what to do when the refreshToken fails
+                     */
+                    Logger.error(error, request);
+                    errorCallback(request, textStatus, error);
                 }
             };
             this.makeAjaxRequest(ajaxParams);
-        },
-
-        /**
-         * Is executed when the refreshToken is successfully.
-         * @param {Anything} result
-         * @param {String} textStatus
-         * @param {jqXHR} request
-         * @param {Function} callback
-         * @private
-         * @see http://api.jquery.com/jquery.ajax/#jQuery-ajax-settings
-         */
-        _refreshTokenSuccess : function(result, textStatus, request, callback) {
-            var token = result.data ? result.data.jwt : null;
-            /** Update the localStorage with the returned token **/
-            this.authProvider.updateToken(token);
-            callback(result, textStatus, request);
-        },
-
-        /**
-         * Is executed when the refreshToken fails
-         * @param {jqXHR} request
-         * @param {String} textStatus
-         * @param {String} error
-         * @param {Function} callback
-         * @private
-         */
-        _refreshTokenError : function(request, textStatus, error, callback) {
-            /**
-             * @TODO define what to do when the refreshToken fails
-             */
-            Logger.error(error, request);
-            callback(request, textStatus, error);
         }
     });
 

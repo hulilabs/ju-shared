@@ -49,10 +49,10 @@ define([
                 return new Promise(function(resolve, reject) {
                     if (controllerInfo.skipAuthentication) {
                         resolve(true);
-                    } else if (self.authProvider.isTokenValid()) {
+                    } else if (self.authProvider.isAuthenticated()) {
                         resolve(true);
                     } else {
-                        reject(new Error(AuthProvider.ERROR_INVALID_TOKEN));
+                        reject(new Error(Middleware.ERROR_INVALID_TOKEN));
                     }
                 });
             },
@@ -69,6 +69,10 @@ define([
     });
 
     Middleware.classMembers({
+        /**
+         * @constant {String} ERROR_INVALID_TOKEN - Invalid token message
+         */
+        ERROR_INVALID_TOKEN : 'Invalid Token',
 
         opts : {
             redirectURL : '/'
