@@ -317,6 +317,14 @@ define([],
         }
     });
 
+    // the same way `bind` works like a call,
+    // `bindWithArguments` works like an apply
+    // i.e. it's a `bind` that can handle an `arguments` array
+    Util.bindWithArguments = function(functionToBind, context, args) {
+        var argumentsToBind = Array.prototype.concat.apply([functionToBind, context], args);
+        return Util.bind.apply(Util, argumentsToBind);
+    };
+
     // Retrieve the names of an object's properties.
     // Delegates to **ECMAScript 5**'s native `Object.keys`
     Util.keys = function(obj) {
