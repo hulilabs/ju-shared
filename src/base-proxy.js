@@ -200,11 +200,11 @@ define([
             // performing any ajax request and wait for a callback to be called
             if ('function' === typeof this.opts.beforeMakingAjaxRequest) {
                 var performAjaxRequestCallback = $.proxy($.ajax, $);
-                this.opts.beforeMakingAjaxRequest(performAjaxRequestCallback, params);
+                return this.opts.beforeMakingAjaxRequest(performAjaxRequestCallback, params);
 
             } else {
             // if no hook is provided, performs the request
-                $.ajax(params);
+                return $.ajax(params);
             }
         },
 
