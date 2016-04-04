@@ -106,7 +106,7 @@ define([
                 defaultMessage : APP_ERROR_MSG
             };
 
-            Logger.warn('BaseProxy: defaultErrorHandler caught app-handled error', proxyError);
+            log('BaseProxy: defaultErrorHandler caught app-handled error', proxyError);
             return BaseProxy.opts.defaultErrorHandler(err, closeCallBack, proxyError);
         }
 
@@ -124,7 +124,7 @@ define([
             defaultMessage : ERROR_MSG
         };
 
-        Logger.warn('BaseProxy: defaultErrorHandler AJAX error', proxyError);
+        log('BaseProxy: defaultErrorHandler AJAX error', proxyError);
         return BaseProxy.opts.defaultErrorHandler(err, closeCallBack, proxyError);
     };
 
@@ -139,7 +139,7 @@ define([
     /**
      * Base Proxy class
      */
-    var BaseProxy = Class.extend({ //jshint ignore:line
+    var BaseProxy = Class.extend({
 
         init : function(opts) {
 
@@ -169,7 +169,8 @@ define([
         makeAjaxRequest : function(userParams, stringifyData) {
 
             var params = {
-                dataType : 'json'
+                dataType : 'json',
+                jsonp : false
             };
 
             // removes any trailing slashes from the end
@@ -183,12 +184,14 @@ define([
                 this._handleAjaxRequestSuccess,
                 this,
                 originalSuccessFn,
-                appErrorHandler);
+                appErrorHandler,
+                userParams);
 
             userParams.error = $.proxy(
                 this._handleAjaxRequestError,
                 this,
-                originalErrorFn);
+                originalErrorFn,
+                userParams);
 
             // stringify the data before performing the AJAX call
             if (stringifyData) {
@@ -208,17 +211,17 @@ define([
             }
         },
 
-        _handleAjaxRequestSuccess : function(successHandler, appErrorHandler, response, textStatus, request) {
+        _handleAjaxRequestSuccess : function(successHandler, appErrorHandler, requestData, response, textStatus, request) {
             BaseProxy.opts.preprocessAjaxSuccess(response, textStatus, request);
 
             if (response && response.errors) {
                 log('BaseProxy: application error on successful AJAX request ', response.errors);
-                return appErrorHandler.call(this, this._normalizeError(response));
+                return appErrorHandler.call(this, this._normalizeError(response, null, null, null, requestData));
             }
             successHandler.call(this, response, textStatus, request);
         },
 
-        _handleAjaxRequestError : function(errorHandler, request, textStatus, errorThrown) {
+        _handleAjaxRequestError : function(errorHandler, requestData, request, textStatus, errorThrown) {
             log('BaseProxy: handling AJAX error', arguments);
             BaseProxy.opts.preprocessAjaxError(request, textStatus, errorThrown);
 
@@ -228,7 +231,7 @@ define([
             }
 
             if (!wasErrorStoppedInAjaxHandler) {
-                errorHandler.call(this, this._normalizeError(null, request, textStatus, errorThrown));
+                errorHandler.call(this, this._normalizeError(null, request, textStatus, errorThrown, requestData));
             }
         },
 
@@ -251,12 +254,13 @@ define([
             }
          */
 
-        _normalizeError : function(appError, jqxhr, textStatus, errorThrown) {
+        _normalizeError : function(appError, jqxhr, textStatus, errorThrown, requestData) {
             return {
                 appError : appError,
                 jqxhr : jqxhr,
                 textStatus : textStatus,
-                errorThrown : errorThrown
+                errorThrown : errorThrown,
+                requestData : requestData
             };
         },
 
