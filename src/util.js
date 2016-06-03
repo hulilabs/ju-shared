@@ -29,7 +29,6 @@ define([],
     toString = ObjProto.toString,
     hasOwnProperty = ObjProto.hasOwnProperty;
 
-
     var
     nativeForEach = ArrayProto.forEach,
     nativeMap = ArrayProto.map,
@@ -298,7 +297,6 @@ define([],
         bStack.pop();
         return true;
     };
-
 
     // Flatten out an array, either recursively (by default), or just one level.
     Util.flatten = function(array, shallow) {
