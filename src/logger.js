@@ -260,18 +260,18 @@ Logger.setHandler(function(messages, context) {
 
         //Setting parameters
         var params = {
-                            type : 'POST',
-                            url : HH.addLangPrefix('/api/log'),
-                            data : payload,
-                            success : function() {
-                                //begin:DevOnly
-                                log('Log call success');
-                                //end:DevOnly
-                            },
-                            error : function() {
-                                // Couldn't communicate with the logging endpoint
-                            }
-                        };
+            type : 'POST',
+            url : HH.addLangPrefix('/api/log'),
+            data : payload,
+            success : function() {
+                //begin:DevOnly
+                log('Log call success', payload);
+                //end:DevOnly
+            },
+            error : function() {
+                // Couldn't communicate with the logging endpoint
+            }
+        };
         $.ajax(params);
     }
     catch (err) {
