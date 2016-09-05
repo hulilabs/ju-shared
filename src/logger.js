@@ -223,11 +223,24 @@ Logger.setHandler(function(messages, context) {
 
         var mainInquiry = messages[0],
             mainMessage = mainInquiry,
-            errorObj = mainInquiry;
+            errorObj = null;
 
-        if (errorObj instanceof Error) {
+        // copies messages into errorContext var, as messages is an `arguments`
+        // reference without Array's methods
+        var errorContext = Array.prototype.slice.apply(messages);
+        // obtains any Error object available in errorContext array
+        errorContext.reduce(function(previousMessage, currentMessage) {
+            if (currentMessage instanceof Error) {
+                errorObj = currentMessage;
+            }
+        }, true);
+
+        // if the error is the `mainMessage`, extracts the `message` property to log it
+        if (mainMessage instanceof Error) {
             mainMessage = errorObj.message;
-        } else {
+        }
+
+        if (!errorObj) {
             // Creates a new error object that will carry the callstack
             errorObj = new Error();
         }
@@ -247,18 +260,18 @@ Logger.setHandler(function(messages, context) {
 
         //Setting parameters
         var params = {
-                            type : 'POST',
-                            url : HH.addLangPrefix('/api/log'),
-                            data : payload,
-                            success : function() {
-                                //begin:DevOnly
-                                log('Log call success');
-                                //end:DevOnly
-                            },
-                            error : function() {
-                                // Couldn't communicate with the logging endpoint
-                            }
-                        };
+            type : 'POST',
+            url : HH.addLangPrefix('/api/log'),
+            data : payload,
+            success : function() {
+                //begin:DevOnly
+                log('Log call success', payload);
+                //end:DevOnly
+            },
+            error : function() {
+                // Couldn't communicate with the logging endpoint
+            }
+        };
         $.ajax(params);
     }
     catch (err) {
