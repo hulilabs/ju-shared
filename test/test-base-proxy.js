@@ -136,6 +136,8 @@ describe('HTTP Proxy', function() {
 
         var beforeMakingAjaxRequest = function(params) {
             expect(params).to.be.an('object');
+
+            return params;
         },
             successHandler = function() {
                 done();
