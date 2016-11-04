@@ -200,15 +200,13 @@ define([
 
             $.extend(params, userParams);
             // hook exposed as `beforeMakingAjaxRequest` to execute code before
-            // performing any ajax request and wait for a callback to be called
+            // performing any ajax request
             if ('function' === typeof this.opts.beforeMakingAjaxRequest) {
-                var performAjaxRequestCallback = $.proxy($.ajax, $);
-                return this.opts.beforeMakingAjaxRequest(performAjaxRequestCallback, params);
-
-            } else {
-            // if no hook is provided, performs the request
-                return $.ajax(params);
+                params = this.opts.beforeMakingAjaxRequest(params);
             }
+
+            // perform the request
+            return $.ajax(params);
         },
 
         _handleAjaxRequestSuccess : function(successHandler, appErrorHandler, requestData, response, textStatus, request) {

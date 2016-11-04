@@ -134,11 +134,10 @@ describe('HTTP Proxy', function() {
                 data : 'dummy-response'
             });
 
-        var beforeMakingAjaxRequest = function(ajax, params) {
-            expect(ajax).to.be.a('function');
+        var beforeMakingAjaxRequest = function(params) {
             expect(params).to.be.an('object');
 
-            ajax(params);
+            return params;
         },
             successHandler = function() {
                 done();
