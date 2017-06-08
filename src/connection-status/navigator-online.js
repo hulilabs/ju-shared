@@ -41,7 +41,7 @@ define([],
 
         bindEvents : function() {
             window.addEventListener('online', this._onOnline.bind(this));
-            window.addEventListener('offline', this._onOnline.bind(this));
+            window.addEventListener('offline', this._onOffline.bind(this));
         },
 
         _onOnline : function() {
