@@ -20,6 +20,19 @@ define([],
      * @param {function} offlineHandler
      */
     var NavigatorOnlineStatus = function(onlineHandler, offlineHandler) {
+        /**
+         * Warning : Issue #22
+         *
+         * Navigator online is not bulletproof on detecting the real connection status because it
+         * relies on the network hardware drivers too. When the browser is not able to reach the
+         * hardware, it will remain window.navigator.onLine=false.
+         *
+         * There is alternatives like a ping to the current domain headers:
+         * @see http://louisremi.com/2011/04/22/navigator-online-alternative-serverreachable/
+         * @see https://gist.github.com/tspringborg/5917663
+         *
+         * Be aware of this issue when users complain about "not being online" notifications.
+         */
         this.isUp = window.navigator.onLine;
 
         this.setOnlineHandler(onlineHandler);
