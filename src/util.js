@@ -15,34 +15,34 @@
 
 /* jscs: disable requireCurlyBraces */
 /* jshint ignore:start */
-define([],
-        function() {
+define(['jquery'], function($) {
     'use strict';
 
-    var ArrayProto = Array.prototype, ObjProto = Object.prototype, FuncProto = Function.prototype,
-        SymbolProto = (typeof Symbol !== 'undefined' ? Symbol.prototype : null);
+    var ArrayProto = Array.prototype,
+        ObjProto = Object.prototype,
+        FuncProto = Function.prototype,
+        SymbolProto = typeof Symbol !== 'undefined' ? Symbol.prototype : null;
 
     // Create quick reference variables for speed access to core prototypes.
     var push = ArrayProto.push,
-    slice = ArrayProto.slice,
-    concat = ArrayProto.concat,
-    toString = ObjProto.toString,
-    hasOwnProperty = ObjProto.hasOwnProperty;
+        slice = ArrayProto.slice,
+        concat = ArrayProto.concat,
+        toString = ObjProto.toString,
+        hasOwnProperty = ObjProto.hasOwnProperty;
 
-    var
-    nativeForEach = ArrayProto.forEach,
-    nativeMap = ArrayProto.map,
-    nativeReduce = ArrayProto.reduce,
-    nativeReduceRight = ArrayProto.reduceRight,
-    nativeFilter = ArrayProto.filter,
-    nativeEvery = ArrayProto.every,
-    nativeSome = ArrayProto.some,
-    nativeIndexOf = ArrayProto.indexOf,
-    nativeLastIndexOf = ArrayProto.lastIndexOf,
-    nativeIsArray = Array.isArray,
-    nativeKeys = Object.keys,
-    nativeCreate = Object.create,
-    nativeBind = FuncProto.bind;
+    var nativeForEach = ArrayProto.forEach,
+        nativeMap = ArrayProto.map,
+        nativeReduce = ArrayProto.reduce,
+        nativeReduceRight = ArrayProto.reduceRight,
+        nativeFilter = ArrayProto.filter,
+        nativeEvery = ArrayProto.every,
+        nativeSome = ArrayProto.some,
+        nativeIndexOf = ArrayProto.indexOf,
+        nativeLastIndexOf = ArrayProto.lastIndexOf,
+        nativeIsArray = Array.isArray,
+        nativeKeys = Object.keys,
+        nativeCreate = Object.create,
+        nativeBind = FuncProto.bind;
 
     // Naked function reference for surrogate-prototype-swapping.
     var Ctor = function() {};
@@ -59,8 +59,8 @@ define([],
                 return function(value) {
                     return func.call(context, value);
                 };
-                // The 2-parameter case has been omitted only because no current consumers
-                // made use of it.
+            // The 2-parameter case has been omitted only because no current consumers
+            // made use of it.
             case 3:
                 return function(value, index, collection) {
                     return func.call(context, value, index, collection);
@@ -85,11 +85,11 @@ define([],
         return Util.property(value);
     };
 
-    var property = Util.property = function(key) {
+    var property = (Util.property = function(key) {
         return function(obj) {
             return obj == null ? void 0 : obj[key];
         };
-    };
+    });
 
     // An internal function for creating assigner functions.
     var createAssigner = function(keysFunc, defaults) {
@@ -115,7 +115,7 @@ define([],
         if (!Util.isObject(prototype)) return {};
         if (nativeCreate) return nativeCreate(prototype);
         Ctor.prototype = prototype;
-        var result = new Ctor;
+        var result = new Ctor();
         Ctor.prototype = null;
         return result;
     };
@@ -166,16 +166,21 @@ define([],
 
     // Keys in IE < 9 that won't be iterated by `for key in ...` and thus missed.
     var hasEnumBug = !{
-        toString : null
+        toString: null,
     }.propertyIsEnumerable('toString');
-    var nonEnumerableProps = ['valueOf', 'isPrototypeOf', 'toString',
-        'propertyIsEnumerable', 'hasOwnProperty', 'toLocaleString'
+    var nonEnumerableProps = [
+        'valueOf',
+        'isPrototypeOf',
+        'toString',
+        'propertyIsEnumerable',
+        'hasOwnProperty',
+        'toLocaleString',
     ];
 
     var collectNonEnumProps = function(obj, keys) {
         var nonEnumIdx = nonEnumerableProps.length;
         var constructor = obj.constructor;
-        var proto = Util.isFunction(constructor) && constructor.prototype || ObjProto;
+        var proto = (Util.isFunction(constructor) && constructor.prototype) || ObjProto;
 
         // Constructor is a special case.
         var prop = 'constructor';
@@ -210,14 +215,13 @@ define([],
 
     // Internal recursive comparison function for `isEqual`.
     Util.deepEq = function(a, b, aStack, bStack) {
-
         // Compare `[[Class]]` names.
         var className = toString.call(a);
         if (className !== toString.call(b)) return false;
         switch (className) {
             // Strings, numbers, regular expressions, dates, and booleans are compared by value.
             case '[object RegExp]':
-                // RegExps are coerced to strings for comparison (Note: '' + /a/i === '/a/i')
+            // RegExps are coerced to strings for comparison (Note: '' + /a/i === '/a/i')
             case '[object String]':
                 // Primitives and their corresponding object wrappers are equivalent; thus, `"5"` is
                 // equivalent to `new String("5")`.
@@ -246,9 +250,16 @@ define([],
             // from different frames are.
             var aCtor = a.constructor,
                 bCtor = b.constructor;
-            if (aCtor !== bCtor && !(Util.isFunction(aCtor) && aCtor instanceof aCtor &&
-                    Util.isFunction(bCtor) && bCtor instanceof bCtor) &&
-                ('constructor' in a && 'constructor' in b)) {
+            if (
+                aCtor !== bCtor &&
+                !(
+                    Util.isFunction(aCtor) &&
+                    aCtor instanceof aCtor &&
+                    Util.isFunction(bCtor) &&
+                    bCtor instanceof bCtor
+                ) &&
+                ('constructor' in a && 'constructor' in b)
+            ) {
                 return false;
             }
         }
@@ -289,7 +300,8 @@ define([],
             while (length--) {
                 // Deep compare each member
                 key = keys[length];
-                if (!(Util.has(b, key) && Util.isEqual(a[key], b[key], aStack, bStack))) return false;
+                if (!(Util.has(b, key) && Util.isEqual(a[key], b[key], aStack, bStack)))
+                    return false;
             }
         }
         // Remove the first object from the stack of traversed objects.
@@ -321,10 +333,10 @@ define([],
     // (https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object/assign)
     Util.extendOwn = Util.assign = createAssigner(Util.keys);
 
-   // Is a given variable an object?
+    // Is a given variable an object?
     Util.isObject = function(obj) {
         var type = typeof obj;
-        return type === 'function' || type === 'object' && !!obj;
+        return type === 'function' || (type === 'object' && !!obj);
     };
 
     // Returns whether an object has a given set of `key:value` pairs.
@@ -342,7 +354,7 @@ define([],
 
     // Similar to ES6's rest param (http://ariya.ofilabs.com/2013/03/es6-and-rest-parameter.html)
     // This accumulates the arguments passed into an array, after a given index.
-    var restArgs = Util.restArgs = function(func, startIndex) {
+    var restArgs = (Util.restArgs = function(func, startIndex) {
         startIndex = startIndex == null ? func.length - 1 : +startIndex;
         return function() {
             var length = Math.max(arguments.length - startIndex, 0);
@@ -365,12 +377,12 @@ define([],
             args[startIndex] = rest;
             return func.apply(this, args);
         };
-    };
+    });
 
     // The cornerstone, an `each` implementation, aka `forEach`.
     // Handles raw objects in addition to array-likes. Treats all
     // sparse array-likes as if they were dense.
-    var each = Util.each = Util.forEach = function(obj, iteratee, context) {
+    var each = (Util.each = Util.forEach = function(obj, iteratee, context) {
         iteratee = optimizeCb(iteratee, context);
         var i, length;
         if (isArrayLike(obj)) {
@@ -384,12 +396,12 @@ define([],
             }
         }
         return obj;
-    };
+    });
 
     // Determine if at least one element in the object matches a truth test.
     // Delegates to **ECMAScript 5**'s native `some` if available.
     // Aliased as `any`.
-    var any = Util.some = Util.any = function(obj, predicate, context) {
+    var any = (Util.some = Util.any = function(obj, predicate, context) {
         predicate = cb(predicate, context);
         var keys = !isArrayLike(obj) && Util.keys(obj),
             length = (keys || obj).length;
@@ -398,7 +410,7 @@ define([],
             if (predicate(obj[currentKey], currentKey, obj)) return true;
         }
         return false;
-    };
+    });
 
     // Create a function bound to a given object (assigning `this`, and arguments,
     // optionally). Delegates to **ECMAScript 5**'s native `Function.bind` if
@@ -430,9 +442,8 @@ define([],
         if (!Util.isObject(obj)) return [];
         if (nativeKeys) return nativeKeys(obj);
         var keys = [];
-        for (var key in obj)
-            if (Util.has(obj, key)) keys.push(key);
-            // Ahem, IE < 9.
+        for (var key in obj) if (Util.has(obj, key)) keys.push(key);
+        // Ahem, IE < 9.
         if (hasEnumBug) collectNonEnumProps(obj, keys);
         return keys;
     };
@@ -473,8 +484,7 @@ define([],
         var a = array.concat();
         for (var i = 0; i < a.length; ++i) {
             for (var j = i + 1; j < a.length; ++j) {
-                if (a[i] === a[j])
-                    a.splice(j--, 1);
+                if (a[i] === a[j]) a.splice(j--, 1);
             }
         }
         return a;
@@ -488,15 +498,16 @@ define([],
      * @return {array}            concatenated array
      */
     Util.concatUnique = function(target, source, getValueFn) {
-
         if (!source || source.length == 0) {
             return target;
         }
 
         var a = target.concat();
-        getValueFn = getValueFn || function(item) {
-                                        return item;
-                                    };
+        getValueFn =
+            getValueFn ||
+            function(item) {
+                return item;
+            };
         for (var i = 0; i < source.length; ++i) {
             var sourceItem = source[i],
                 sourceVal = getValueFn(sourceItem),
@@ -534,7 +545,7 @@ define([],
             urlPath = urlPath.slice(paramsPos + 1);
             log(urlPath);
             if (search.test(urlPath)) {
-               hasQuery = true;
+                hasQuery = true;
             }
         }
         return hasQuery;
@@ -552,9 +563,11 @@ define([],
      */
     Util.getUrlParamsFromString = function(query) {
         var match,
-            pl = /\+/g,  // Regex for replacing addition symbol with a space
+            pl = /\+/g, // Regex for replacing addition symbol with a space
             search = /([^&=]+)=?([^&]*)/g,
-            decode = function(s) { return decodeURIComponent(s.replace(pl, ' ')); },
+            decode = function(s) {
+                return decodeURIComponent(s.replace(pl, ' '));
+            },
             queryPos;
 
         // Extracts the query part from the provided path
@@ -564,7 +577,7 @@ define([],
 
         var urlParams = {};
         while ((match = search.exec(query))) {
-           urlParams[decode(match[1])] = decode(match[2]);
+            urlParams[decode(match[1])] = decode(match[2]);
         }
         return urlParams;
     };
@@ -579,10 +592,11 @@ define([],
         if (prefix === undefined) {
             prefix = '_$';
         }
-        return ((prefix + 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx').replace(/[xy]/g, function(c) {
-            var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);   // jshint ignore:line
+        return (prefix + 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx').replace(/[xy]/g, function(c) {
+            var r = (Math.random() * 16) | 0,
+                v = c == 'x' ? r : (r & 0x3) | 0x8; // jshint ignore:line
             return v.toString(16);
-        }));
+        });
     };
 
     /**
@@ -598,8 +612,8 @@ define([],
         for (var key in obj) {
             if (obj.hasOwnProperty(key)) {
                 firstElem = {
-                    key : key,
-                    value : obj[key]
+                    key: key,
+                    value: obj[key],
                 };
                 break;
             }
@@ -608,10 +622,10 @@ define([],
     };
 
     /**
-    * classic JS inheritance function
-    */
+     * classic JS inheritance function
+     */
     Util.inherit = function(Child, Parent) {
-        var F = function() { };
+        var F = function() {};
         F.prototype = Parent.prototype;
         Child.prototype = new F();
         Child.prototype.constructor = Child;
@@ -715,6 +729,5 @@ define([],
 
     // Export the utils
     return Util;
-
 });
 /* jshint ignore:end */

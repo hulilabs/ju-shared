@@ -13,11 +13,13 @@
  * Handles dependency injection for theclasses
  */
 define([
+            'jquery',
             'require',
             'ju-shared/class',
             'ju-shared/util'
         ],
         function(
+            $,
             require,
             Class,
             Util
@@ -108,43 +110,10 @@ define([
             });
         },
         /**
-         * Given a dependencies info object we will fetch the dependencies
-         * and store the instances in the same dependencies info
+         * Removed method due to webpack support, kept here just to aid in further refactoring
          */
-        fetchDependencies : function(dependenciesInfo) {
-
-            var dependenciesPaths = this.normalizeDependenciesInfoObj(dependenciesInfo);
-
-            var dependenciesFetchedPromise = new Promise(function(resolve /* , reject */) {
-                // Use require to fetch all the dependencies
-                require(dependenciesPaths, function() {
-                    var dependenciesInstances = arguments,
-                        dependenciesLength = arguments.length,
-                        dependenciesIndex = 0;
-
-                    $.each(dependenciesInfo, function(dependencyName, dependencyInfo) {
-                        // If we don't have more loaded dependencies, then break
-                        if (dependenciesIndex >= dependenciesLength) {
-                            return false;
-                        }
-                        // Stores the instance in the
-                        var instance = dependenciesInstances[dependenciesIndex];
-                        dependencyInfo.instance = instance;
-
-                        dependenciesIndex++;
-                    });
-
-                    // Continue and pass the new dependencies object
-                    resolve(dependenciesInfo);
-                });
-            });
-
-            // If there is any issue loading the dependencies then log it to the server
-            dependenciesFetchedPromise['catch'](function(err) {
-                Logger.error(err);
-            });
-
-            return dependenciesFetchedPromise;
+        fetchDependencies : function() {
+            throw new Error('DependencyLoader#fetchDependencies is no longer supported due to webpack changes. Please add a direct imports for CSS and HTML files and appropiate helper for L10n');
         },
         /**
          * Normalizes the dependencies object, all the values should contain
