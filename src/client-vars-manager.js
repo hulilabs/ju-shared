@@ -66,11 +66,7 @@ define([
          *                             for that key
          */
         get : function(keyName) {
-            var value = this.varsDictionary[keyName];
-            if (value == null) {
-                Logger.warn("ClientVarsManager: Couldn't find value for key", keyName);
-            }
-            return value;
+            return this.varsDictionary[keyName];
         },
 
         set : function(keyName, value) {
