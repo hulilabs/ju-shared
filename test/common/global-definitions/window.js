@@ -11,7 +11,7 @@ var createGlobalWindowObject = function(callback, err, jsdomWindow) {
 };
 
 module.exports = function(callback) {
-    jsdom.env({
+    require('jsdom/lib/old-api').env({
         done : createGlobalWindowObject.bind(null, callback),
         html : '<body></body>'
     });

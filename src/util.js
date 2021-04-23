@@ -166,7 +166,7 @@ define(['jquery'], function($) {
 
     // Keys in IE < 9 that won't be iterated by `for key in ...` and thus missed.
     var hasEnumBug = !{
-        toString: null,
+        toString : null,
     }.propertyIsEnumerable('toString');
     var nonEnumerableProps = [
         'valueOf',
@@ -612,8 +612,8 @@ define(['jquery'], function($) {
         for (var key in obj) {
             if (obj.hasOwnProperty(key)) {
                 firstElem = {
-                    key: key,
-                    value: obj[key],
+                    key : key,
+                    value : obj[key],
                 };
                 break;
             }

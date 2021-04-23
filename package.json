@@ -1,6 +1,6 @@
 {
   "name": "@hulilabs/ju-shared",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "Object Oriented and common Javascript utilities",
   "main": " ",
   "directories": {
@@ -23,15 +23,15 @@
     "chai": "~3.4.1",
     "grunt": "~0.4.5",
     "grunt-cli": "~0.1.13",
+    "grunt-contrib-jshint": "~0.12.0",
     "grunt-jscs": "^2.7.0",
     "grunt-mocha-test": "^0.12.7",
     "grunt-newer": "^1.1.2",
     "jquery": "~2.1.4",
-    "jsdom": "~3.1.2",
+    "jsdom": "11.0.0",
     "mocha": "~2.3.4",
     "requirejs": "~2.1.22",
     "sinon": "~1.17.2",
-    "sinon-chai": "~2.8.0",
-    "grunt-contrib-jshint": "~0.12.0"
+    "sinon-chai": "~2.8.0"
   }
 }
