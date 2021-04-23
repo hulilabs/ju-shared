@@ -1,6 +1,6 @@
 {
-  "name": "ju-shared",
-  "version": "1.1.0",
+  "name": "@hulilabs/ju-shared",
+  "version": "2.1.0",
   "description": "Object Oriented and common Javascript utilities",
   "main": " ",
   "directories": {
