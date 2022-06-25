@@ -28,7 +28,7 @@
     "grunt-mocha-test": "^0.12.7",
     "grunt-newer": "^1.1.2",
     "jquery": "~2.1.4",
-    "jsdom": "11.0.0",
+    "jsdom": "16.5.0",
     "mocha": "~2.3.4",
     "requirejs": "~2.1.22",
     "sinon": "~1.17.2",
