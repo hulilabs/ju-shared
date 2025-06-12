@@ -137,6 +137,48 @@ define([
     };
 
     /**
+     * Removes emojis from a string
+     * @param {string} str - The string to clean
+     * @return {string} The string without emojis
+     */
+    const removeEmojis = str => {
+        if (typeof str !== 'string') {
+            return str;
+        }
+        // Remove emojis using Unicode ranges
+        return str.replace(/[\u{1F300}-\u{1F5FF}]|[\u{1F600}-\u{1F64F}]|[\u{1F680}-\u{1F6FF}]|[\u{1F700}-\u{1F77F}]|[\u{1F780}-\u{1F7FF}]|[\u{1F800}-\u{1F8FF}]|[\u{1F900}-\u{1F9FF}]|[\u{1FA00}-\u{1FA6F}]|[\u{1FA70}-\u{1FAFF}]/gu, '');
+    };
+
+    /**
+     * Recursively removes emojis from object properties
+     * @param {Object} obj - The object to clean
+     * @return {Object} The object with emojis removed from string properties
+     */
+    const removeEmojisFromObject = obj => {
+        if (typeof obj === 'string') {
+            return removeEmojis(obj);
+        }
+        
+        if (obj && typeof obj === 'object') {
+            if (Array.isArray(obj)) {
+                return obj.map(function(item) {
+                    return removeEmojisFromObject(item);
+                });
+            } else {
+                const cleaned = {};
+                for (let key in obj) {
+                    if (obj.hasOwnProperty(key)) {
+                        cleaned[key] = removeEmojisFromObject(obj[key]);
+                    }
+                }
+                return cleaned;
+            }
+        }
+        
+        return obj;
+    };
+
+    /**
      * Base Proxy class
      */
     var BaseProxy = Class.extend({ // jshint ignore:line
@@ -175,6 +217,12 @@ define([
 
             // removes any trailing slashes from the end
             userParams.url = removeTrailingSlashes(userParams.url);
+
+            // Remove emojis from userParams data
+            // while we support storing emojis in database
+            if (userParams.data && userParams.method !== 'GET') {
+                userParams.data = removeEmojisFromObject(userParams.data);
+            }
 
             var originalSuccessFn = userParams.success || this.opts.defaultSuccessHandler,
                 originalErrorFn = userParams.error || this.opts.defaultErrorHandler,
